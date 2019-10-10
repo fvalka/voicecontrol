@@ -6,8 +6,8 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class InboundCallEvent extends CallEvent {
-    public InboundCallEvent(Object source, Call call) {
+public class VoiceMailCalledEvent extends CallEvent {
+    public VoiceMailCalledEvent(Object source, Call call) {
         super(source, call);
     }
 }
