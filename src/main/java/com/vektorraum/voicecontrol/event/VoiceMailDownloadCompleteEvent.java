@@ -6,19 +6,21 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.context.ApplicationEvent;
 
+import java.io.File;
+
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 @Data
-public class VoiceMailRecordingCompletedEvent extends ApplicationEvent {
+public class VoiceMailDownloadCompleteEvent extends ApplicationEvent {
     private String callSid;
     private String recordingSid;
-    private String recordingUrl;
+    private File file;
 
     @Builder
-    public VoiceMailRecordingCompletedEvent(Object source, String callSid, String recordingSid, String recordingUrl) {
+    public VoiceMailDownloadCompleteEvent(Object source, String callSid, String recordingSid, File file) {
         super(source);
         this.callSid = callSid;
         this.recordingSid = recordingSid;
-        this.recordingUrl = recordingUrl;
+        this.file = file;
     }
 }

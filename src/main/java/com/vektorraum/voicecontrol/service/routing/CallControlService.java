@@ -1,8 +1,8 @@
-package com.vektorraum.voicecontrol.routing;
+package com.vektorraum.voicecontrol.service.routing;
 
 import com.vektorraum.voicecontrol.model.Call;
-import com.vektorraum.voicecontrol.routing.instruction.Action;
-import com.vektorraum.voicecontrol.routing.instruction.CallControlInstruction;
+import com.vektorraum.voicecontrol.service.routing.instruction.Action;
+import com.vektorraum.voicecontrol.service.routing.instruction.CallControlInstruction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

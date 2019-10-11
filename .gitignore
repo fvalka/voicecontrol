@@ -4,8 +4,6 @@ target/
 !**/src/main/**
 !**/src/test/**
 
-**application.properties**
-
 ### STS ###
 .apt_generated
 .classpath
@@ -31,3 +29,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SECRET CONFIG FILES / TOKEN FILES
+**application.properties**
+/vektorraumVoiceBot

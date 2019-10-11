@@ -111,9 +111,10 @@ public class VoiceMailRest {
 
         if("completed".equals(body.getFirst("RecordingStatus"))) {
             VoiceMailRecordingCompletedEvent event = VoiceMailRecordingCompletedEvent.builder()
-                    .call(call)
                     .source(this)
+                    .callSid(body.getFirst("CallSid"))
                     .recordingSid(body.getFirst("RecordingSid"))
+                    .recordingUrl(body.getFirst("RecordingUrl"))
                     .build();
             applicationEventPublisher.publishEvent(event);
         } else {

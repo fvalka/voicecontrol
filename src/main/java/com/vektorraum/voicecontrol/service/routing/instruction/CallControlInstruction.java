@@ -1,4 +1,4 @@
-package com.vektorraum.voicecontrol.routing.instruction;
+package com.vektorraum.voicecontrol.service.routing.instruction;
 
 import lombok.Builder;
 import lombok.Data;
