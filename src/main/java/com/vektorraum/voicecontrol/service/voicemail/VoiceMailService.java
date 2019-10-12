@@ -3,6 +3,7 @@ package com.vektorraum.voicecontrol.service.voicemail;
 import com.vektorraum.voicecontrol.event.VoiceMailDownloadCompleteEvent;
 import com.vektorraum.voicecontrol.event.VoiceMailRecordingCompletedEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -18,15 +19,18 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 @Slf4j
-public class VoicemailService {
+public class VoiceMailService {
     private ApplicationEventPublisher eventPublisher;
+    private final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyyddMM-HHmmss");
 
     @Autowired
-    public VoicemailService(ApplicationEventPublisher eventPublisher) {
+    public VoiceMailService(ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
     }
 
@@ -43,7 +47,7 @@ public class VoicemailService {
         RestTemplate restTemplate = new RestTemplate();
 
         File file = restTemplate.execute(event.getRecordingUrl(), HttpMethod.GET, null, clientHttpResponse -> {
-            Path path = Paths.get("voicemails", UUID.randomUUID().toString() + ".wav");
+            Path path = Paths.get("voicemails", generateFileName());
             File ret = path.toFile();
             StreamUtils.copy(clientHttpResponse.getBody(), new FileOutputStream(ret));
             return ret;
@@ -57,5 +61,11 @@ public class VoicemailService {
                 .build();
 
         eventPublisher.publishEvent(eventOut);
+    }
+
+    private String generateFileName() {
+        String dateString = dateTimeFormatter.format(ZonedDateTime.now(ZoneId.of("UTC")));
+        String randomString = RandomStringUtils.randomAlphanumeric(6);
+        return dateString + "-" + randomString + ".wav";
     }
 }

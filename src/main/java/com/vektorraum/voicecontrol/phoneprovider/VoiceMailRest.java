@@ -65,6 +65,7 @@ public class VoiceMailRest {
                 .finishOnKey("*")
                 .recordingStatusCallback("/voicemail/recordingstatus")
                 .recordingStatusCallbackMethod(HttpMethod.POST)
+                .trim(Record.Trim.DO_NOT_TRIM)
                 .build();
 
         Say noMessageReceived = new Say.Builder("No message recorded. Thank you! Bye!")

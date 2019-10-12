@@ -4,6 +4,7 @@ import com.vektorraum.voicecontrol.bot.config.BotConfig;
 import com.vektorraum.voicecontrol.event.InboundCallEvent;
 import com.vektorraum.voicecontrol.event.VoiceMailCalledEvent;
 import com.vektorraum.voicecontrol.event.VoiceMailDownloadCompleteEvent;
+import com.vektorraum.voicecontrol.event.VoiceMailTranscriptionsEvent;
 import com.vektorraum.voicecontrol.model.Call;
 import com.vektorraum.voicecontrol.service.tracking.CallTrackingService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +16,17 @@ import org.telegram.abilitybots.api.bot.AbilityBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.stream.Collectors;
+
 @Component
 @Slf4j
 public class VoiceBot extends AbilityBot {
-    private static final String INCOMING_CALL_MESSAGE = "Incoming call:\nFrom: %s\nTo: %s";
-    private static final String VOICE_MAIL_CALLED = "Call sent to voicemail:\nFrom: %s";
-    private static final String VOICE_MAIL_AUDIO_CAPTION = "New voicemail from: %s";
+    private static final String INCOMING_CALL_MESSAGE = ":calling: **Incoming call**\nFrom: %s\nTo: %s";
+    private static final String VOICE_MAIL_CALLED = ":vhs: **Call sent to voicemail**\nFrom: %s";
+    private static final String VOICE_MAIL_AUDIO_CAPTION = ":vhs: **New voicemail**\nFrom: %s";
     private static final String SEND_AUDIO_ERROR = "Received voicemail from: %s but couldn't send the audio file!";
+    private static final String TRANSCRIPTIONS_MESSAGE = "Transcription for voicemail from: %s\n%s";
+
     private BotConfig botConfig;
     private CallTrackingService callTrackingService;
 
@@ -52,12 +57,13 @@ public class VoiceBot extends AbilityBot {
     @EventListener
     public void onVoiceMailDownloaded(@NotNull VoiceMailDownloadCompleteEvent event) {
         log.info("Bot received voice mail download complete event even={}", event);
-        String from = callTrackingService.findCall(event.getCallSid()).map(Call::getFrom).orElse("UNKOWN");
+        String from = findFromByCallSid(event.getCallSid());
 
         SendAudio sendAudio = new SendAudio();
         sendAudio.setAudio(event.getFile());
         sendAudio.setCaption(String.format(VOICE_MAIL_AUDIO_CAPTION, from));
         sendAudio.setChatId(botConfig.getCreatorId());
+        sendAudio.setPerformer(from);
 
         try {
             sender.sendAudio(sendAudio);
@@ -65,6 +71,21 @@ public class VoiceBot extends AbilityBot {
             sendToSubscribers(String.format(SEND_AUDIO_ERROR, from));
             log.warn("Failed to send audio file for event={}", event, e);
         }
+    }
+
+    @EventListener
+    public void onVoiceMailTranscription(@NotNull VoiceMailTranscriptionsEvent event) {
+        String from = findFromByCallSid(event.getCallSid());
+        String transcriptions = event.getTranscriptions().stream()
+                .map(it -> String.format("Confidence: %s\n%s", it.getConfidence(), it.getTranscription()))
+                .collect(Collectors.joining("\n"));
+        String message = String.format(TRANSCRIPTIONS_MESSAGE, from, transcriptions);
+        sendToSubscribers(message);
+    }
+
+    @NotNull
+    private String findFromByCallSid(String callSid) {
+        return callTrackingService.findCall(callSid).map(Call::getFrom).orElse("UNKOWN");
     }
 
     private void sendToSubscribers(String message) {

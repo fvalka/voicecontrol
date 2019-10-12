@@ -33,3 +33,7 @@ build/
 ### SECRET CONFIG FILES / TOKEN FILES
 **application.properties**
 /vektorraumVoiceBot
+
+### TEST DATA ###
+voicemails/*
+keys/
