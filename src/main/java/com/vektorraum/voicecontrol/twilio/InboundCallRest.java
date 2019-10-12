@@ -1,18 +1,18 @@
-package com.vektorraum.voicecontrol.phoneprovider;
+package com.vektorraum.voicecontrol.twilio;
 
 import com.twilio.twiml.VoiceResponse;
 import com.twilio.twiml.voice.Dial;
 import com.twilio.twiml.voice.Redirect;
-import com.twilio.twiml.voice.Say;
 import com.vektorraum.voicecontrol.event.InboundCallEvent;
 import com.vektorraum.voicecontrol.model.Call;
-import com.vektorraum.voicecontrol.phoneprovider.converters.HttpPostToCallConverter;
+import com.vektorraum.voicecontrol.twilio.converters.HttpPostToCallConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
+@RequestMapping("/twilio/inbound")
 public class InboundCallRest {
     private ApplicationEventPublisher applicationEventPublisher;
     private HttpPostToCallConverter toCallConverter;
@@ -39,7 +40,7 @@ public class InboundCallRest {
      * @param body All request parameters, contains From, To, CallSid, etc.
      * @return TwiML XML instructions for how the call should proceed
      */
-    @PostMapping(value = "/inbound", produces = "application/xml")
+    @PostMapping(value = "/", produces = "application/xml")
     public String inboundCall(@RequestBody MultiValueMap<String, String> body) {
         log.trace("Inbound call body={}", body.toString());
 
@@ -54,10 +55,10 @@ public class InboundCallRest {
         VoiceResponse.Builder voiceBuilder = new VoiceResponse.Builder();
         Dial callForward = new Dial.Builder().number("+4369912916769")
                 .timeout(20)
-                .action("/voicemail/")
+                .action("/twilio/voicemail/")
                 .build();
 
-        Redirect redirectToVoiceMail = new Redirect.Builder("/voicemail/").build();
+        Redirect redirectToVoiceMail = new Redirect.Builder("/twilio/voicemail/").build();
 
         return voiceBuilder
                 //.dial(callForward)

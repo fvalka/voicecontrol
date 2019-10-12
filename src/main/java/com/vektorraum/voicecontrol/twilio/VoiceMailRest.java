@@ -1,4 +1,4 @@
-package com.vektorraum.voicecontrol.phoneprovider;
+package com.vektorraum.voicecontrol.twilio;
 
 import com.twilio.http.HttpMethod;
 import com.twilio.twiml.VoiceResponse;
@@ -8,7 +8,7 @@ import com.twilio.twiml.voice.Say;
 import com.vektorraum.voicecontrol.event.VoiceMailCalledEvent;
 import com.vektorraum.voicecontrol.event.VoiceMailRecordingCompletedEvent;
 import com.vektorraum.voicecontrol.model.Call;
-import com.vektorraum.voicecontrol.phoneprovider.converters.HttpPostToCallConverter;
+import com.vektorraum.voicecontrol.twilio.converters.HttpPostToCallConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/voicemail")
+@RequestMapping("/twilio/voicemail")
 public class VoiceMailRest {
     private ApplicationEventPublisher applicationEventPublisher;
     private HttpPostToCallConverter toCallConverter;
@@ -59,11 +59,11 @@ public class VoiceMailRest {
                 .build();
 
         Record voiceMailRecord = new Record.Builder()
-                .action("/voicemail/thankyoubye")
+                .action("/twilio/voicemail/thankyoubye")
                 .timeout(5)
                 .playBeep(true)
                 .finishOnKey("*")
-                .recordingStatusCallback("/voicemail/recordingstatus")
+                .recordingStatusCallback("/twilio/voicemail/recordingstatus")
                 .recordingStatusCallbackMethod(HttpMethod.POST)
                 .trim(Record.Trim.DO_NOT_TRIM)
                 .build();

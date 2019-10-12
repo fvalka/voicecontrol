@@ -21,9 +21,9 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class VoiceBot extends AbilityBot {
-    private static final String INCOMING_CALL_MESSAGE = ":calling: **Incoming call**\nFrom: %s\nTo: %s";
-    private static final String VOICE_MAIL_CALLED = ":vhs: **Call sent to voicemail**\nFrom: %s";
-    private static final String VOICE_MAIL_AUDIO_CAPTION = ":vhs: **New voicemail**\nFrom: %s";
+    private static final String INCOMING_CALL_MESSAGE = "\uD83D\uDCF2 **Incoming call**\nFrom: %s\nTo: %s";
+    private static final String VOICE_MAIL_CALLED = "\uD83D\uDCFC **Call sent to voicemail**\nFrom: %s";
+    private static final String VOICE_MAIL_AUDIO_CAPTION = "\uD83D\uDCFC New voicemail\nFrom: %s";
     private static final String SEND_AUDIO_ERROR = "Received voicemail from: %s but couldn't send the audio file!";
     private static final String TRANSCRIPTIONS_MESSAGE = "Transcription for voicemail from: %s\n%s";
 
@@ -89,6 +89,6 @@ public class VoiceBot extends AbilityBot {
     }
 
     private void sendToSubscribers(String message) {
-        silent.send(message, botConfig.getCreatorId());
+        silent.sendMd(message, botConfig.getCreatorId());
     }
 }

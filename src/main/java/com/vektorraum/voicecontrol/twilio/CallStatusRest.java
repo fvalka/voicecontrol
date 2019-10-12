@@ -1,4 +1,4 @@
-package com.vektorraum.voicecontrol.phoneprovider;
+package com.vektorraum.voicecontrol.twilio;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.MultiValueMap;
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/status")
+@RequestMapping("/twilio/status")
 @Slf4j
 public class CallStatusRest {
     /**
