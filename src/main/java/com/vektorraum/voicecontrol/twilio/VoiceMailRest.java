@@ -65,7 +65,7 @@ public class VoiceMailRest {
                 .finishOnKey("*")
                 .recordingStatusCallback("/twilio/voicemail/recordingstatus")
                 .recordingStatusCallbackMethod(HttpMethod.POST)
-                .trim(Record.Trim.DO_NOT_TRIM)
+                .trim(Record.Trim.TRIM_SILENCE)
                 .build();
 
         Say noMessageReceived = new Say.Builder("No message recorded. Thank you! Bye!")

@@ -116,7 +116,6 @@ public class InboundCallRest {
 
         return voiceBuilder
                 .dial(callForward)
-                .hangup(new Hangup.Builder().build())
                 .build()
                 .toXml();
     }
