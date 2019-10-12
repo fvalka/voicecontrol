@@ -14,6 +14,15 @@ controlled by a Telegram bot control interface.
 * Voicemail and routing are controlled through a Telegram bot
 * Supports multiple inbound/outbound numbers
 
+## Architecture
+Voice control is build on Spring Boot and Java 11. Telegram API calls are handled by an open source library. MongoDB is used as the document store for call information and voice mail message metadata. Audio files are stored on hard drive. 
+
+Twilio is used as the PSTN routing solution and programable voice provider. Google Cloud Platform speech to text is used for transcribing voicemail messages. 
+
+The user interface text based over a Telegram chat bot. 
+
+<img src="doc/img/voicecontrol%20architecture.png" alt="Architecture overview" width="750"/>
+
 ## Inbound Call Routing
 
 Inbound calls are routed based upon a routing table stored in MongoDB. 
@@ -49,3 +58,6 @@ first routing rule already matches.
 
 Therefore more specific rules need to have a higher priority then less 
 specific rules. 
+
+## Speech to Text / Transcription
+Google Cloud Platforms speech to text API is used for transcribing voicemail messages. The API is used in async, enhanced mode, with the default model and automated language detection. 
