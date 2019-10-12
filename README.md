@@ -19,7 +19,7 @@ Voice control is build on Spring Boot and Java 11. Telegram API calls are handle
 
 Twilio is used as the PSTN routing solution and programable voice provider. Google Cloud Platform speech to text is used for transcribing voicemail messages. 
 
-The user interface text based over a Telegram chat bot. 
+The user interface is text based over a Telegram chat bot. 
 
 <img src="doc/img/voicecontrol%20architecture.png" alt="Architecture overview" width="750"/>
 
