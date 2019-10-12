@@ -1,5 +1,6 @@
 package com.vektorraum.voicecontrol.service.routing.instruction;
 
+import com.vektorraum.voicecontrol.model.routing.Action;
 import lombok.Builder;
 import lombok.Data;
 

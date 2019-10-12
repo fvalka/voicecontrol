@@ -2,9 +2,14 @@ package com.vektorraum.voicecontrol.twilio;
 
 import com.twilio.twiml.VoiceResponse;
 import com.twilio.twiml.voice.Dial;
+import com.twilio.twiml.voice.Hangup;
 import com.twilio.twiml.voice.Redirect;
+import com.twilio.twiml.voice.Say;
 import com.vektorraum.voicecontrol.event.InboundCallEvent;
 import com.vektorraum.voicecontrol.model.Call;
+import com.vektorraum.voicecontrol.model.routing.Action;
+import com.vektorraum.voicecontrol.service.routing.InboundCallRoutingService;
+import com.vektorraum.voicecontrol.service.routing.instruction.CallControlInstruction;
 import com.vektorraum.voicecontrol.twilio.converters.HttpPostToCallConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +32,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class InboundCallRest {
     private ApplicationEventPublisher applicationEventPublisher;
     private HttpPostToCallConverter toCallConverter;
+    private InboundCallRoutingService routingService;
 
     @Autowired
-    public InboundCallRest(ApplicationEventPublisher applicationEventPublisher, HttpPostToCallConverter toCallConverter) {
+    public InboundCallRest(ApplicationEventPublisher applicationEventPublisher, HttpPostToCallConverter toCallConverter, InboundCallRoutingService routingService) {
         this.applicationEventPublisher = applicationEventPublisher;
         this.toCallConverter = toCallConverter;
+        this.routingService = routingService;
     }
 
     /**
@@ -45,25 +52,104 @@ public class InboundCallRest {
         log.trace("Inbound call body={}", body.toString());
 
         Call call = toCallConverter.apply(body);
-
         log.info("Received inbound call={}", call);
-
         InboundCallEvent inboundCallEvent = new InboundCallEvent(this, call);
-
         applicationEventPublisher.publishEvent(inboundCallEvent);
 
+        CallControlInstruction instruction = routingService.routeCall(call);
+
+        if (instruction.getAction() == Action.FORWARD) {
+            log.info("Forwarding call based upon instruction={}", instruction);
+            return forward(instruction);
+        } else if (instruction.getAction() == Action.SEND_TO_VOICE_MAIL) {
+            log.info("Sending call to voicemail based upon instruction={}", instruction);
+            return sendToVoicemail();
+        } else if (instruction.getAction() == Action.REJECT) {
+            log.info("Rejecting call based upon instruction={}", instruction);
+            return reject();
+        }
+
+        log.error("Unknown action in call control instruction");
+        throw new RuntimeException("Unkown action in call control instruction");
+    }
+
+    /**
+     * Forwards the call to voicemail if the call remained unanswered or hangs up if the call was answered by
+     * the forwarding destination.
+     *
+     * @param body Twilio standard request parameter body
+     * @return TwiML XML for forwarding to voice mail or hanging up
+     */
+    @PostMapping(value = "/dial_complete", produces = "application/xml")
+    public String dialComplete(@RequestBody MultiValueMap<String, String> body) {
+        Call call = toCallConverter.apply(body);
+        String dialCallStatus = body.getFirst("DialCallStatus");
+
+        if (dialCallStatus == null || !dialCallStatus.equals("completed")) {
+            log.info("Call was not answered by forwarding destination call={}", call);
+            return sendToVoicemail();
+        } else {
+            log.info("Call completed call={}", call);
+            return new VoiceResponse.Builder()
+                    .hangup(new Hangup.Builder().build())
+                    .build()
+                    .toXml();
+        }
+    }
+
+    /**
+     * Forwards the call to the destination number and if there is no answer the call is sent to voicemail.
+     *
+     * For further handling see {@link VoiceMailRest}.
+     *
+     * @param instruction Call routing instruction
+     * @return TwiML XML which forwards the call
+     */
+    private String forward(CallControlInstruction instruction) {
         VoiceResponse.Builder voiceBuilder = new VoiceResponse.Builder();
-        Dial callForward = new Dial.Builder().number("+4369912916769")
-                .timeout(20)
-                .action("/twilio/voicemail/")
+
+        Dial callForward = new Dial.Builder()
+                .number(instruction.getDestination())
+                .timeout(routingService.getForwardingTimeOut())
+                .action("/twilio/inbound/dial_complete")
                 .build();
 
+        return voiceBuilder
+                .dial(callForward)
+                .hangup(new Hangup.Builder().build())
+                .build()
+                .toXml();
+    }
+
+    /**
+     * Sends the caller directly to voicemail
+     *
+     * @return TwiML XML which redirects the call to voicemail
+     */
+    private String sendToVoicemail() {
+        VoiceResponse.Builder voiceBuilder = new VoiceResponse.Builder();
         Redirect redirectToVoiceMail = new Redirect.Builder("/twilio/voicemail/").build();
 
         return voiceBuilder
-                //.dial(callForward)
                 .redirect(redirectToVoiceMail)
-                //.hangup(new Hangup.Builder().build())
+                .build()
+                .toXml();
+    }
+
+    /**
+     * Rejects a call with an error message
+     *
+     * @return TwiML XML which says a message and then hangs up
+     */
+    private String reject() {
+        VoiceResponse.Builder voiceBuilder = new VoiceResponse.Builder();
+        Say message = new Say.Builder("The number you have called is currently unavailable!")
+                .voice(Say.Voice.POLLY_MATTHEW)
+                .build();
+
+        return voiceBuilder
+                .say(message)
+                .hangup(new Hangup.Builder().build())
                 .build()
                 .toXml();
     }

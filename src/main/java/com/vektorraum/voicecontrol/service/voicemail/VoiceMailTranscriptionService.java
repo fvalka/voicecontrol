@@ -94,12 +94,11 @@ public class VoiceMailTranscriptionService {
     private RecognitionConfig getTranscriptionConfiguration() {
         return RecognitionConfig.newBuilder()
                         .setLanguageCode(voiceMailConfig.getTranscriptionLanguages().get(0))
-                        //.addAllAlternativeLanguageCodes(
-                        //        voiceMailConfig.getTranscriptionLanguages())
+                        .addAllAlternativeLanguageCodes(
+                                voiceMailConfig.getTranscriptionLanguages())
                         .setSampleRateHertz(8000)
                         .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
                         .setUseEnhanced(true)
-                        .setModel("phone_call")
                         .build();
     }
 }
