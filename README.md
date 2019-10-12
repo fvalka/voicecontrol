@@ -2,7 +2,7 @@
 Super flexible, custom voice mail and call routing for Twilio 
 controlled by a Telegram bot control interface.
 
-<p align="center" style="margin-bottom: 10em;">
+<p align="center" style="margin-bottom: 10em; width: 40%">
   <img src="doc/img/logo.png" alt="voice control"/>
 </p>
 
