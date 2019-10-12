@@ -136,6 +136,43 @@ public class InboundCallRestTest {
                         "</Response>"));
     }
 
+    @Test
+    public void givenPostRequestToDialComplete_whenDialWasUnsuccessful_thenTwiMLForwardsToVoiceMail() throws Exception {
+        mockMvc.perform(
+                post("/twilio/inbound/dial_complete")
+                        .param("AccountSid", ACCOUNT_SID)
+                        .param("CallSid", CALLSID)
+                        .param("From", FROM)
+                        .param("To", TO)
+                        .param("Direction", INBOUND)
+                        .param("CallStatus", RINGING)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andDo(print())
+                .andExpect(content().xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Response>" +
+                        "<Redirect>/twilio/voicemail/</Redirect>" +
+                        "</Response>"));
+    }
+
+    @Test
+    public void givenPostRequestToDialComplete_whenDialWasSuccessfull_thenTwiMLHangsUp() throws Exception {
+        mockMvc.perform(
+                post("/twilio/inbound/dial_complete")
+                        .param("AccountSid", ACCOUNT_SID)
+                        .param("CallSid", CALLSID)
+                        .param("From", FROM)
+                        .param("To", TO)
+                        .param("Direction", INBOUND)
+                        .param("CallStatus", RINGING)
+                        .param("DialCallStatus", "completed")
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andDo(print())
+                .andExpect(content().xml("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+                        "<Response>" +
+                        "<Hangup/>" +
+                        "</Response>"));
+    }
+
     @NotNull
     private ResultActions postInboundCall() throws Exception {
         return mockMvc.perform(
