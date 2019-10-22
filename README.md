@@ -17,7 +17,7 @@ controlled by a Telegram bot control interface.
 ## Architecture
 Voice control is build on Spring Boot and Java 11. Telegram API calls are handled by an open source library. MongoDB is used as the document store for call information and voice mail message metadata. Audio files are stored on hard drive. 
 
-Twilio is used as the PSTN routing solution and programable voice provider. Google Cloud Platform speech to text is used for transcribing voicemail messages. 
+Twilio is used as the PSTN routing solution and programmable voice provider. Google Cloud Platform speech to text is used for transcribing voicemail messages. 
 
 The user interface is text based over a Telegram chat bot. 
 
@@ -59,5 +59,20 @@ first routing rule already matches.
 Therefore more specific rules need to have a higher priority then less 
 specific rules. 
 
+### Availability
+Number availability is also managed by the InboundCallRoutingService. 
+The availability of the numbers is stored in the database. 
+
+Routing is performed first, and then the availability of the number to which 
+the route leads is checked. If this number is currently unavailable the
+action will be changed from FORWARD to SEND_TO_VOICEMAIL. 
+
 ## Speech to Text / Transcription
-Google Cloud Platforms speech to text API is used for transcribing voicemail messages. The API is used in async, enhanced mode, with the default model and automated language detection. 
+Google Cloud Platforms [speech to text API](https://cloud.google.com/speech-to-text/)
+ is used for transcribing voicemail messages. The API is used in async, enhanced mode, with the default model and automated language detection. 
+
+## Security
+The endpoints for twilio are protected by a ServletFilter. All [Twilio requests are 
+signed using a HMAC signature](https://www.twilio.com/docs/usage/security#validating-requests)
+, this signature is verified in the filter and
+a 403 - FORBIDDEN is returned if the signature is missing or invalid. 
